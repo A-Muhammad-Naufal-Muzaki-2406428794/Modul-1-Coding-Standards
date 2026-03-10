@@ -1,3 +1,5 @@
+# Module 01: Coding Standards
+
 # Refleksi 1
 
 ### 1. Clean Code Principles
@@ -56,3 +58,14 @@ Jika saya membuat kelas *functional test* baru dan melakukan *copy-paste* prosed
   2. Pindahkan semua variabel konfigurasi (`serverPort`, `baseUrl`) dan anotasi *setup* (`@SpringBootTest`, `@BeforeEach`) ke dalam kelas induk tersebut.
   3. Kelas `CreateProductFunctionalTest` dan kelas *test* baru yang akan dibuat cukup melakukan **`extends BaseFunctionalTest`**.
      Dengan cara ini, konfigurasi *setup* hanya ditulis **satu kali**, membuat kode jauh lebih *clean*, modular, dan mudah di-*maintain*.
+
+
+# Module 02: CI/CD & DevOps
+
+**1. Sebutkan masalah kualitas kode (*code quality issue*) yang Anda perbaiki selama latihan dan jelaskan strategi Anda dalam memperbaikinya.**
+Selama pengerjaan, SonarCloud mendeteksi beberapa masalah *maintainability* dan *reliability* (*code smells*) di repositori saya. Berikut adalah masalah yang saya perbaiki beserta strategi penyelesaiannya:
+* **Modifier `public` yang tidak perlu pada pengujian JUnit 5:** SonarCloud mendeteksi bahwa kelas dan metode *test* pada JUnit 5 tidak perlu dideklarasikan secara eksplisit sebagai `public`. **Strategi:** Saya membuka file-file *test* (seperti `ProductServiceImplTest` dan `ProductControllerTest`) dan menghapus *modifier* `public` tersebut, membiarkannya menjadi *package-private*. Hal ini sesuai dengan *best practice* dari JUnit 5 dan mengurangi kode *boilerplate* yang tidak perlu.
+* **Import atau variabel yang tidak terpakai:** Terdapat beberapa *import* yang tidak digunakan lagi setelah melakukan *refactoring* kode. **Strategi:** Saya menggunakan fitur bawaan IDE (seperti "Optimize Imports" di IntelliJ) dan memeriksa secara manual baris kode yang ditandai oleh SonarCloud untuk menghapus kode yang redundan, sehingga file tetap bersih dan mudah dipelihara.
+
+**2. Lihatlah *workflows* CI/CD Anda. Menurut Anda, apakah implementasi saat ini sudah memenuhi definisi *Continuous Integration* dan *Continuous Deployment*? Jelaskan alasannya!**
+Ya, menurut saya implementasi saat ini sudah memenuhi definisi dasar dari *Continuous Integration* (CI) maupun *Continuous Deployment* (CD). Untuk aspek CI, *workflows* telah dikonfigurasi sedemikian rupa sehingga setiap kali ada *push* atau *pull request*, GitHub Actions akan otomatis memicu eksekusi *automated test suites* (menggunakan Gradle dan JaCoCo) dan melakukan analisis kualitas kode statis melalui SonarCloud. Hal ini memastikan bahwa setiap penambahan kode baru selalu diverifikasi kebenaran dan kualitasnya secara terus-menerus sebelum digabungkan ke *branch* utama. Sementara itu, untuk aspek CD, repositori ini sudah dilengkapi dengan `Dockerfile` dan disiapkan untuk menggunakan pendekatan *pull-based deployment*. Artinya, setiap kali ada kode yang lolos uji dan di-*merge* ke *branch* `main`, platform PaaS akan secara otomatis mendeteksi perubahan tersebut, mem-*build* *image* Docker, dan men-*deploy* aplikasi ke tahapan *production* tanpa memerlukan intervensi manual.
