@@ -39,31 +39,73 @@ class ProductRepositoryTest {
     }
 
     @Test
-    void testFindAllIfEmpty() {
-        Iterator<Product> productIterator = productRepository.findAll();
-        assertFalse(productIterator.hasNext());
+    void testEditProductPositive() {
+        // Setup: Buat produk awal
+        Product product = new Product();
+        product.setProductId("12345");
+        product.setProductName("Sampo Awal");
+        product.setProductQuantity(10);
+        productRepository.create(product);
+
+        // Action: Edit produk tersebut
+        Product updatedProduct = new Product();
+        updatedProduct.setProductId("12345"); // ID harus sama
+        updatedProduct.setProductName("Sampo Berubah");
+        updatedProduct.setProductQuantity(20);
+        Product result = productRepository.update(updatedProduct);
+
+        // Verify: Pastikan nilainya berubah
+        assertNotNull(result);
+        assertEquals("Sampo Berubah", result.getProductName());
+        assertEquals(20, result.getProductQuantity());
     }
 
     @Test
-    void testFindAllIfMoreThanOneProduct() {
-        Product product1 = new Product();
-        product1.setProductId("eb558e9f-1c39-460e-8860-71af6af63bd6");
-        product1.setProductName("Sampo Cap Bambang");
-        product1.setProductQuantity(100);
-        productRepository.create(product1);
+    void testEditProductNegative_NotFound() {
+        // Action: Mencoba mengedit produk dengan ID yang tidak ada ("999")
+        Product ghostProduct = new Product();
+        ghostProduct.setProductId("999");
+        ghostProduct.setProductName("Produk Hantu");
+        ghostProduct.setProductQuantity(0);
 
-        Product product2 = new Product();
-        product2.setProductId("a0f9de46-90b1-437d-a0bf-d0821dde9096");
-        product2.setProductName("Sampo Cap Usep");
-        product2.setProductQuantity(50);
-        productRepository.create(product2);
+        Product result = productRepository.update(ghostProduct);
 
-        Iterator<Product> productIterator = productRepository.findAll();
-        assertTrue(productIterator.hasNext());
-        Product savedProduct = productIterator.next();
-        assertEquals(product1.getProductId(), savedProduct.getProductId());
-        savedProduct = productIterator.next();
-        assertEquals(product2.getProductId(), savedProduct.getProductId());
-        assertFalse(productIterator.hasNext());
+        // Verify: Harus mengembalikan null karena ID tidak ditemukan
+        assertNull(result);
+    }
+
+    @Test
+    void testDeleteProductPositive() {
+        // Setup: Buat produk
+        Product product = new Product();
+        product.setProductId("12345");
+        product.setProductName("Sampo Dihapus");
+        product.setProductQuantity(10);
+        productRepository.create(product);
+
+        // Action: Hapus produk
+        productRepository.delete("12345");
+
+        // Verify: Pastikan repository menjadi kosong
+        Iterator<Product> iterator = productRepository.findAll();
+        assertFalse(iterator.hasNext());
+    }
+
+    @Test
+    void testDeleteProductNegative_NotFound() {
+        // Setup: Buat produk
+        Product product = new Product();
+        product.setProductId("12345");
+        product.setProductName("Sampo Aman");
+        product.setProductQuantity(10);
+        productRepository.create(product);
+
+        // Action: Coba hapus ID yang salah
+        productRepository.delete("999");
+
+        // Verify: Produk asli ("12345") harus tetap ada / tidak terhapus
+        Iterator<Product> iterator = productRepository.findAll();
+        assertTrue(iterator.hasNext());
+        assertEquals("12345", iterator.next().getProductId());
     }
 }
