@@ -45,7 +45,7 @@ class PaymentServiceImplTest {
 
         Map<String, String> paymentData = new HashMap<>();
         paymentData.put("voucherCode", "ESHOP1234ABC5678");
-        payment = new Payment("1", "VOUCHER", paymentData);
+        payment = new Payment("1", "VOUCHER", paymentData, order);
     }
 
     @Test
