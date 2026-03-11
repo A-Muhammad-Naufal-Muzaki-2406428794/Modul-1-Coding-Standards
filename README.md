@@ -60,6 +60,7 @@ Jika saya membuat kelas *functional test* baru dan melakukan *copy-paste* prosed
      Dengan cara ini, konfigurasi *setup* hanya ditulis **satu kali**, membuat kode jauh lebih *clean*, modular, dan mudah di-*maintain*.
 
 
+
 # Module 02: CI/CD & DevOps
 
 **1. Sebutkan masalah kualitas kode (*code quality issue*) yang Anda perbaiki selama latihan dan jelaskan strategi Anda dalam memperbaikinya.**
@@ -69,3 +70,27 @@ Selama pengerjaan, SonarCloud mendeteksi beberapa masalah *maintainability* dan 
 
 **2. Lihatlah *workflows* CI/CD Anda. Menurut Anda, apakah implementasi saat ini sudah memenuhi definisi *Continuous Integration* dan *Continuous Deployment*? Jelaskan alasannya!**
 Ya, menurut saya implementasi saat ini sudah memenuhi definisi dasar dari *Continuous Integration* (CI) maupun *Continuous Deployment* (CD). Untuk aspek CI, *workflows* telah dikonfigurasi sedemikian rupa sehingga setiap kali ada *push* atau *pull request*, GitHub Actions akan otomatis memicu eksekusi *automated test suites* (menggunakan Gradle dan JaCoCo) dan melakukan analisis kualitas kode statis melalui SonarCloud. Hal ini memastikan bahwa setiap penambahan kode baru selalu diverifikasi kebenaran dan kualitasnya secara terus-menerus sebelum digabungkan ke *branch* utama. Sementara itu, untuk aspek CD, repositori ini sudah dilengkapi dengan `Dockerfile` dan disiapkan untuk menggunakan pendekatan *pull-based deployment*. Artinya, setiap kali ada kode yang lolos uji dan di-*merge* ke *branch* `main`, platform PaaS akan secara otomatis mendeteksi perubahan tersebut, mem-*build* *image* Docker, dan men-*deploy* aplikasi ke tahapan *production* tanpa memerlukan intervensi manual.
+
+
+
+# Module 03: Maintainability & OO Principles
+
+### 1. Prinsip SOLID yang Diterapkan pada Proyek
+Dalam pengerjaan modul ini, saya telah menerapkan kelima prinsip SOLID untuk memperbaiki struktur kode awal (pada *branch* `before-solid`) yang kurang baik:
+
+* **Single Responsibility Principle (SRP):** Saya memisahkan `CarController` yang sebelumnya menumpang di dalam file `ProductController.java` menjadi filenya sendiri. Sekarang, masing-masing *controller* hanya memiliki satu tanggung jawab: `ProductController` murni mengurus *routing* produk, dan `CarController` murni mengurus *routing* mobil.
+* **Open/Closed Principle (OCP):** Kode sekarang lebih tertutup untuk modifikasi namun terbuka untuk ekstensi. Dengan bergantung pada abstraksi (*interface*), jika di masa depan kita ingin menambahkan jenis penyimpanan baru (misalnya ke *database* asli, bukan *in-memory*), kita cukup membuat *class* implementasi baru tanpa perlu merombak kode *Service* atau *Controller* yang sudah ada.
+* **Liskov Substitution Principle (LSP):** Saya menghapus *keyword* `extends ProductController` pada deklarasi `CarController`. Secara konsep, *controller* mobil bukanlah turunan dari *controller* produk. Menghapus *inheritance* (pewarisan) paksaan ini mencegah `CarController` memiliki *behavior* atau rute HTTP aneh yang tidak relevan dengan mobil.
+* **Interface Segregation Principle (ISP):** Penggunaan *interface* seperti `CarService` memastikan bahwa klien (dalam hal ini `CarController`) hanya bergantung pada metode-metode spesifik yang benar-benar mereka butuhkan (Create, Read, Update, Delete) tanpa dibebani metode "sampah" yang tidak relevan.
+* **Dependency Inversion Principle (DIP):** Modul tingkat tinggi sekarang tidak lagi bergantung pada modul tingkat rendah. Saya mengubah tipe injeksi pada `CarController` dari *class* konkret (`CarServiceImpl`) menjadi sebuah abstraksi/interface (`CarService`). Hal ini membuat komponen lebih mandiri dan terpisah.
+
+### 2. Keuntungan Menerapkan Prinsip SOLID
+
+Penerapan SOLID membuat struktur kode (*codebase*) menjadi sangat fleksibel, mudah diuji (*testable*), dan mudah dirawat (*maintainable*) seiring berjalannya waktu.
+* **Contoh Keuntungan Fleksibilitas (DIP & OCP):** Karena `CarController` sekarang bergantung pada *interface* `CarService`, saya bisa dengan mudah mengganti logika bisnis di baliknya tanpa menyentuh *controller* sama sekali. Begitu juga di lapisan repositori, transisi dari *in-memory list* ke PostgreSQL nantinya akan sangat mulus tanpa merusak logika *service*.
+* **Contoh Keuntungan Perawatan (SRP):** Dengan memisahkan `CarController` dari `ProductController`, ukuran file menjadi lebih pendek, rapi, dan terfokus. Jika nanti ada *bug* atau pelaporan *error* pada fitur mobil, saya tahu persis harus mencari di file mana tanpa takut tidak sengaja merusak kode fitur produk.
+
+### 3. Kerugian Jika Tidak Menerapkan Prinsip SOLID
+Mengabaikan SOLID akan menghasilkan kode yang kaku (*rigid*), rapuh (*fragile*), dan sangat terikat satu sama lain (*tightly coupled*). Perubahan kecil di satu baris kode bisa memicu kerusakan beruntun di tempat lain.
+* **Contoh Kerapuhan (Pelanggaran LSP):** Saat `CarController` masih berstatus sebagai *subclass* dari `ProductController` (`extends`), ia secara otomatis mewarisi semua *endpoint* HTTP milik produk. Ini sangat berbahaya karena bisa memicu kebingungan *routing* pada Spring Boot, dan pengguna mungkin bisa mengakses fungsionalitas produk melalui URL mobil secara tidak sengaja.
+* **Contoh Kekakuan (Pelanggaran DIP):** Jika kita mempertahankan injeksi *class* konkret (misalnya `CarController` bergantung langsung pada `CarServiceImpl`), kedua lapisan ini menjadi sangat bergantung satu sama lain. Mengisolasi komponen untuk melakukan *unit testing* akan menjadi sangat sulit karena kita tidak bisa menyisipkan objek tiruan (*mock object*) dengan mudah tanpa adanya *interface*.
