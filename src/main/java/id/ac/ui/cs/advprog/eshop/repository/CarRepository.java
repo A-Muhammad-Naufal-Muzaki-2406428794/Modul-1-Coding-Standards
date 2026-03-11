@@ -9,7 +9,7 @@ import java.util.List;
 import java.util.UUID;
 
 @Repository
-public class CarRepository {
+public class CarRepository implements ICarRepository {
     static int id = 0;
     private List<Car> carData = new ArrayList<>();
 
