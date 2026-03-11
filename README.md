@@ -1,6 +1,6 @@
 # Module 01: Coding Standards
 
-# Refleksi 1
+## Refleksi 1
 
 ### 1. Clean Code Principles
 Selama pengerjaan fitur *Edit* dan *Delete* ini, saya mencoba menerapkan beberapa prinsip *Clean Code* agar kodingan saya gak cuma "jalan", tapi juga rapi:
@@ -39,7 +39,7 @@ Setelah saya review ulang, jujur ada satu kebiasaan kurang aman yang saya lakuin
     ```
 
 
-# Refleksi 2
+## Refleksi 2
 
 ### 1. Tentang Unit Test dan Code Coverage
 * **Perasaan setelah menulis Unit Test:** Rasanya jauh lebih tenang dan percaya diri (*confident*). Ketika nanti saya harus mengubah kode atau menambah fitur baru, saya tidak perlu khawatir merusak fitur lama tanpa sadar, karena *unit test* akan langsung mendeteksi (*fail*) jika ada sesuatu yang tidak sesuai ekspektasi.
@@ -94,3 +94,25 @@ Penerapan SOLID membuat struktur kode (*codebase*) menjadi sangat fleksibel, mud
 Mengabaikan SOLID akan menghasilkan kode yang kaku (*rigid*), rapuh (*fragile*), dan sangat terikat satu sama lain (*tightly coupled*). Perubahan kecil di satu baris kode bisa memicu kerusakan beruntun di tempat lain.
 * **Contoh Kerapuhan (Pelanggaran LSP):** Saat `CarController` masih berstatus sebagai *subclass* dari `ProductController` (`extends`), ia secara otomatis mewarisi semua *endpoint* HTTP milik produk. Ini sangat berbahaya karena bisa memicu kebingungan *routing* pada Spring Boot, dan pengguna mungkin bisa mengakses fungsionalitas produk melalui URL mobil secara tidak sengaja.
 * **Contoh Kekakuan (Pelanggaran DIP):** Jika kita mempertahankan injeksi *class* konkret (misalnya `CarController` bergantung langsung pada `CarServiceImpl`), kedua lapisan ini menjadi sangat bergantung satu sama lain. Mengisolasi komponen untuk melakukan *unit testing* akan menjadi sangat sulit karena kita tidak bisa menyisipkan objek tiruan (*mock object*) dengan mudah tanpa adanya *interface*.
+
+
+
+# Module 04: Test-Driven Development & Refactoring
+
+### 1. Evaluasi Alur TDD
+Berdasarkan pertanyaan reflektif yang diajukan oleh Percival mengenai tujuan pengujian, alur TDD (*Red-Green-Refactor*) ini terbukti **sangat berguna**. Pendekatan ini secara efektif memaksa saya untuk memikirkan *requirements* dan desain dari kode (seperti penentuan parameter dan ekspektasi *output*) sebelum benar-benar menulis logika bisnisnya.
+
+Fase pembuatan tes di awal memberikan jaring pengaman (*safety net*) yang membuat saya merasa lebih percaya diri (*confident*) saat melakukan *refactoring* atau penambahan fitur baru, karena saya tahu persis jika ada sesuatu yang rusak, tes akan langsung mendeteksinya.
+
+Namun, untuk perbaikan ke depannya, saya menyadari bahwa memikirkan seluruh skenario *edge cases* pada fase *Red* terkadang masih cukup menantang. Terkadang tes yang dibuat baru sebatas *happy path* dan *unhappy path* yang paling umum. Di masa mendatang, saya perlu meluangkan lebih banyak waktu di awal untuk memetakan kemungkinan *input* yang tidak terduga agar *test suite* menjadi lebih kokoh.
+
+### 2. Evaluasi Unit Test berdasarkan Prinsip F.I.R.S.T.
+Secara keseluruhan, *unit tests* yang telah saya buat di latihan ini sudah cukup baik dalam mengadopsi prinsip **F.I.R.S.T.**:
+
+* **Fast:** Pengujian berjalan dengan sangat cepat (dalam hitungan milidetik) karena kita mengisolasi komponen dan menggunakan Mockito pada *layer* Service sehingga tidak membebani memori atau I/O.
+* **Independent:** Setiap *test method* berdiri sendiri tanpa saling bergantung. Penggunaan anotasi `@BeforeEach` memastikan setiap tes mendapatkan *state* atau *mock object* yang baru dan bersih.
+* **Repeatable:** Tes dapat dijalankan berulang kali, baik di lingkungan lokal maupun nanti saat diintegrasikan dengan CI/CD *pipeline*, dan akan selalu memberikan hasil yang konsisten karena data *mock* sudah terprediksi.
+* **Self-Validating:** Semua tes secara otomatis memvalidasi dirinya sendiri dengan memberikan hasil lulus (hijau) atau gagal (merah) menggunakan *assertions* (`assertEquals`, `assertThrows`, dll.), tanpa perlu inspeksi *print log* secara manual.
+* **Timely:** Penulisan tes dilakukan secara tepat waktu, yaitu ditulis *sebelum* implementasi kode produksi dibuat (mengikuti kaidah ketat TDD).
+
+**Hal yang perlu ditingkatkan:** Meskipun prinsip-prinsip ini sudah diterapkan, terkadang proses inisialisasi data *dummy* (seperti pembuatan objek `Product` dan `Order` berulang kali) membuat file tes menjadi sedikit kotor dan panjang. Di masa depan, saya bisa mengimplementasikan pola *Test Data Builder* atau *Object Mother* agar pembuatan *setup test* bisa lebih bersih dan mematuhi prinsip *Clean Code* di dalam kode tes itu sendiri.
