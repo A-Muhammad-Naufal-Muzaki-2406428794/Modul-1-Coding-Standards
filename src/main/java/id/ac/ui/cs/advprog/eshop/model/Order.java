@@ -14,7 +14,6 @@ public class Order {
     String author;
     String status;
 
-    // Konstruktor pertama: Tanpa parameter status (Langkah 2)
     public Order(String id, List<Product> products, Long orderTime, String author) {
         this.id = id;
         this.orderTime = orderTime;
